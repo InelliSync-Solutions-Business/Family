@@ -1,4 +1,4 @@
-import { toast, Toast } from 'sonner';
+import { toast } from 'sonner';
 
 type NotificationType = 'success' | 'error' | 'info' | 'warning';
 
@@ -31,83 +31,55 @@ export function useNotifications() {
       onDismiss,
     } = options;
 
-    const toastOptions: Partial<Toast> = {
+    const toastOptions = {
       id,
       duration,
       onDismiss,
+      ...(action && {
+        action: {
+          label: action.label,
+          onClick: action.onClick,
+        },
+      }),
     };
 
-    if (action) {
-      toastOptions.action = {
-        label: action.label,
-        onClick: action.onClick,
-      };
-    }
-
-    if (description) {
-      toastOptions.description = description;
-    }
-
     if (promise) {
-      return toast.promise(
-        promise,
-        {
-          loading: title,
-          success: (data) => ({
-            title: typeof data === 'string' ? data : 'Success',
-            description: typeof data === 'string' ? undefined : description,
-          }),
-          error: (err) => ({
-            title: err.message || 'Error',
-            description: typeof err === 'string' ? err : description,
-          }),
-        },
-        toastOptions
-      );
+      toast.promise(promise, {
+        ...toastOptions,
+        loading: title,
+        success: description || 'Completed successfully',
+        error: (err: Error) => err.message || 'Something went wrong',
+      });
+      return;
     }
 
     switch (type) {
       case 'success':
-        return toast.success(title, toastOptions);
+        return toast.success(title, { ...toastOptions, description });
       case 'error':
-        return toast.error(title, toastOptions);
+        return toast.error(title, { ...toastOptions, description });
       case 'warning':
-        return toast.warning(title, toastOptions);
+        return toast.warning(title, { ...toastOptions, description });
       case 'info':
       default:
-        return toast(title, toastOptions);
+        return toast(title, { ...toastOptions, description });
     }
-  };
-
-  const success = (title: string, options?: NotificationOptions) =>
-    notify('success', title, options);
-
-  const error = (title: string, options?: NotificationOptions) =>
-    notify('error', title, options);
-
-  const warning = (title: string, options?: NotificationOptions) =>
-    notify('warning', title, options);
-
-  const info = (title: string, options?: NotificationOptions) =>
-    notify('info', title, options);
-
-  const promise = <T>(
-    promise: Promise<T>,
-    title: string,
-    options?: NotificationOptions
-  ) => notify('info', title, { ...options, promise });
-
-  const dismiss = (toastId: string) => {
-    toast.dismiss(toastId);
   };
 
   return {
     notify,
-    success,
-    error,
-    warning,
-    info,
-    promise,
-    dismiss,
+    success: (title: string, options?: NotificationOptions) =>
+      notify('success', title, options),
+    error: (title: string, options?: NotificationOptions) =>
+      notify('error', title, options),
+    warning: (title: string, options?: NotificationOptions) =>
+      notify('warning', title, options),
+    info: (title: string, options?: NotificationOptions) =>
+      notify('info', title, options),
+    promise: <T>(
+      promise: Promise<T>,
+      title: string,
+      options?: NotificationOptions
+    ) => notify('info', title, { ...options, promise }),
   };
 }

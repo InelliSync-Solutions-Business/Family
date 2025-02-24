@@ -1,5 +1,5 @@
 import OpenAI from 'openai';
-import { supabaseClient } from '@/lib/supabase';
+import { supabase } from '@/lib/supabaseClient';
 import { Database } from '@/types/supabase';
 
 const openai = new OpenAI({
@@ -17,7 +17,7 @@ export type MediaMetadata = {
 };
 
 export class MediaProcessingService {
-  private supabase = supabaseClient;
+  private supabase = supabase;
 
   /**
    * Process a newly uploaded media file
@@ -69,9 +69,13 @@ export class MediaProcessingService {
         .from('family-media')
         .getPublicUrl(storagePath);
 
+      // Fetch the file and convert blob to File
+      const blob = await fetch(publicUrl).then(r => r.blob());
+      const file = new File([blob], 'audio.mp3', { type: blob.type });
+
       // Transcribe using OpenAI
       const transcription = await openai.audio.transcriptions.create({
-        file: await fetch(publicUrl).then(r => r.blob()),
+        file,
         model: 'whisper-1',
         language: 'en',
       });

@@ -1,7 +1,8 @@
-import { createFFmpeg, fetchFile } from '@ffmpeg/ffmpeg';
-import { supabaseClient } from '@/lib/supabase';
+import { FFmpeg } from '@ffmpeg/ffmpeg';
+import { fetchFile, toBlobURL } from '@ffmpeg/util';
+import { supabase } from '@/lib/supabaseClient';
 
-const ffmpeg = createFFmpeg({ log: true });
+const ffmpeg = new FFmpeg();
 
 export class ThumbnailService {
   private static instance: ThumbnailService;
@@ -18,7 +19,11 @@ export class ThumbnailService {
 
   private async init() {
     if (!this.initialized) {
-      await ffmpeg.load();
+      // Load ffmpeg with the correct base path for WASM files
+      await ffmpeg.load({
+        coreURL: await toBlobURL('/ffmpeg-core.js', 'text/javascript'),
+        wasmURL: await toBlobURL('/ffmpeg-core.wasm', 'application/wasm'),
+      });
       this.initialized = true;
     }
   }
@@ -33,50 +38,51 @@ export class ThumbnailService {
     videoUrl: string,
     timestamp: number = 0
   ): Promise<string> {
-    await this.init();
-
     try {
+      await this.init();
+
       // Download the video file
       const videoData = await fetchFile(videoUrl);
-      ffmpeg.FS('writeFile', 'input.mp4', videoData);
+      await ffmpeg.writeFile('input.mp4', videoData);
 
-      // Generate thumbnail
-      await ffmpeg.run(
+      // Extract a frame at the specified timestamp to create thumbnail
+      await ffmpeg.exec([
         '-i', 'input.mp4',
-        '-ss', timestamp.toString(),
-        '-frames:v', '1',
-        '-q:v', '2',
+        '-ss', `${timestamp}.000`,
+        '-vframes', '1',
+        '-f', 'image2',
         'thumbnail.jpg'
-      );
+      ]);
 
-      // Read the thumbnail
-      const thumbnailData = ffmpeg.FS('readFile', 'thumbnail.jpg');
-      
+      // Read the thumbnail file
+      const thumbnailData = await ffmpeg.readFile('thumbnail.jpg');
+      const thumbnailBlob = new Blob([thumbnailData], { type: 'image/jpeg' });
+
       // Clean up
-      ffmpeg.FS('unlink', 'input.mp4');
-      ffmpeg.FS('unlink', 'thumbnail.jpg');
+      await ffmpeg.deleteFile('input.mp4');
+      await ffmpeg.deleteFile('thumbnail.jpg');
 
       // Upload to Supabase Storage
-      const { data, error } = await supabaseClient.storage
+      const { data, error } = await supabase.storage
         .from('family-media-thumbnails')
         .upload(
           `${Date.now()}.jpg`,
-          thumbnailData,
+          thumbnailBlob,
           {
             contentType: 'image/jpeg',
-            cacheControl: '3600',
+            cacheControl: '3600'
           }
         );
 
       if (error) throw error;
 
-      const { data: { publicUrl } } = supabaseClient.storage
+      const { data: { publicUrl } } = supabase.storage
         .from('family-media-thumbnails')
         .getPublicUrl(data.path);
 
       return publicUrl;
     } catch (error) {
-      console.error('Error generating thumbnail:', error);
+      console.error('Error generating video thumbnail:', error);
       throw error;
     }
   }
@@ -87,49 +93,50 @@ export class ThumbnailService {
    * @returns URL of the generated waveform image
    */
   async generateAudioWaveform(audioUrl: string): Promise<string> {
-    await this.init();
-
     try {
+      await this.init();
+
       // Download the audio file
       const audioData = await fetchFile(audioUrl);
-      ffmpeg.FS('writeFile', 'input.mp3', audioData);
+      await ffmpeg.writeFile('input.mp3', audioData);
 
-      // Generate waveform image
-      await ffmpeg.run(
+      // Generate waveform using ffmpeg's showwavespic filter
+      await ffmpeg.exec([
         '-i', 'input.mp3',
         '-filter_complex', 'showwavespic=s=640x120:colors=#4338ca',
         '-frames:v', '1',
         'waveform.png'
-      );
+      ]);
 
       // Read the waveform image
-      const waveformData = ffmpeg.FS('readFile', 'waveform.png');
-      
+      const waveformData = await ffmpeg.readFile('waveform.png');
+      const waveformBlob = new Blob([waveformData], { type: 'image/png' });
+
       // Clean up
-      ffmpeg.FS('unlink', 'input.mp3');
-      ffmpeg.FS('unlink', 'waveform.png');
+      await ffmpeg.deleteFile('input.mp3');
+      await ffmpeg.deleteFile('waveform.png');
 
       // Upload to Supabase Storage
-      const { data, error } = await supabaseClient.storage
+      const { data, error } = await supabase.storage
         .from('family-media-thumbnails')
         .upload(
           `waveform_${Date.now()}.png`,
-          waveformData,
+          waveformBlob,
           {
             contentType: 'image/png',
-            cacheControl: '3600',
+            cacheControl: '3600'
           }
         );
 
       if (error) throw error;
 
-      const { data: { publicUrl } } = supabaseClient.storage
+      const { data: { publicUrl } } = supabase.storage
         .from('family-media-thumbnails')
         .getPublicUrl(data.path);
 
       return publicUrl;
     } catch (error) {
-      console.error('Error generating waveform:', error);
+      console.error('Error generating audio waveform:', error);
       throw error;
     }
   }
@@ -147,7 +154,7 @@ export class ThumbnailService {
         ? await this.generateVideoThumbnail(mediaUrl)
         : await this.generateAudioWaveform(mediaUrl);
 
-      const { error } = await supabaseClient
+      const { error } = await supabase
         .from('media_items')
         .update({ thumbnail_url: thumbnailUrl })
         .eq('id', mediaId);

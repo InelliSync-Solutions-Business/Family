@@ -3,7 +3,7 @@ import { DashboardLayout } from './layouts/DashboardLayout'
 import { LoginPage } from './pages/Login'
 import { PersonalPage } from './pages/Personal'
 import { SharedPage } from './pages/Shared'
-import { SettingsPage } from './pages/Settings'
+import { SettingsPage } from './pages/SettingsPage'
 import { AnalyticsDashboard } from './pages/AnalyticsDashboard'
 
 const router = createBrowserRouter([

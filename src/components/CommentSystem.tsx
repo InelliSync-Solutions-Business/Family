@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/services/supabase'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { Button } from '../components/ui/button'
+import { Input } from '../components/ui/input'
+import { Avatar, AvatarFallback } from '../components/ui/avatar'
+import { useAuth } from '@/hooks/useAuth'
+import { RealtimePostgresChangesPayload } from '@supabase/supabase-js'
 
 type Comment = {
   id: string
@@ -29,13 +31,13 @@ export function CommentSystem({ documentId }: Props) {
         schema: 'public',
         table: 'comments',
         filter: `document_id=eq.${documentId}`
-      }, (payload) => {
+      }, (payload: RealtimePostgresChangesPayload<Comment>) => {
         if (payload.eventType === 'INSERT') {
-          setComments(prev => [...prev, payload.new as Comment])
+          setComments(prev => [...prev, payload.new])
         }
         if (payload.eventType === 'UPDATE') {
           setComments(prev => 
-            prev.map(c => c.id === payload.new.id ? payload.new : c)
+            prev.map(comment => comment.id === payload.new.id ? payload.new : comment)
           )
         }
       })

@@ -1,15 +1,15 @@
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
+import { Button } from '../../components/ui/button';
+import { Input } from '../../components/ui/input';
+import { Textarea } from '../../components/ui/textarea';
 import { MediaUpload } from './MediaUpload';
 import { ThumbnailService } from '@/services/thumbnailService';
 import { MediaProcessingService } from '@/services/mediaProcessing';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Calendar } from '@/components/ui/calendar';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs';
+import { Calendar } from '../../components/ui/calendar';
 import { format } from 'date-fns';
-import { Badge } from '@/components/ui/badge';
+import { Badge } from '../../components/ui/badge';
 import { toast } from 'sonner';
 
 type WizardStep = 'upload' | 'details' | 'preview' | 'processing';

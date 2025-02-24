@@ -1,12 +1,12 @@
 import { useState } from 'react';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Calendar } from '@/components/ui/calendar';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Badge } from '@/components/ui/badge';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
+import { Input } from '../../components/ui/input';
+import { Button } from '../../components/ui/button';
+import { ScrollArea } from '../../components/ui/scroll-area';
+import { Calendar } from '../../components/ui/calendar';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../../components/ui/accordion';
+import { Badge } from '../../components/ui/badge';
+import { Switch } from '../../components/ui/switch';
+import { Label } from '../../components/ui/label';
 import { DateRange } from 'react-day-picker';
 
 interface FilterState {

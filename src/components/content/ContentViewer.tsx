@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { X, Download, Plus } from 'lucide-react';
 import { ContentItem, ContentAnnotation } from '@/types/content';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '../../components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs';
 import { AIChat } from '@/components/AIChat';
 import { CommentSystem } from '@/components/CommentSystem';
 
@@ -121,11 +121,11 @@ export function ContentViewer({
           </TabsContent>
 
           <TabsContent value="comments" className="h-[calc(100%-2rem)] mt-2">
-            <CommentSystem contentId={content.id} />
+            <CommentSystem documentId={content.id} />
           </TabsContent>
 
           <TabsContent value="ai" className="h-[calc(100%-2rem)] mt-2">
-            <AIChat contentContext={content} />
+            <AIChat context={content.id} open={true} onOpenChange={() => {}} />
           </TabsContent>
         </Tabs>
       </DialogContent>

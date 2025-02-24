@@ -5,8 +5,7 @@ import { motion } from 'framer-motion';
 import { ContentItem, ContentType } from '@/types/content';
 import { useContent } from '@/hooks/use-content';
 import { ContentCard } from './ContentCard';
-import Input from '@/components/ui/input';
-import Button from '@/components/ui/button';
+import { Button } from '../../components/ui/button';
 import {
   Select,
   SelectContent,
@@ -14,12 +13,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from '@/components/ui/dropdown-menu';
+
+import { Input } from '../../components/ui/input';
 
 interface ContentGridProps {
   isPrivate?: boolean;
@@ -56,7 +58,7 @@ export function ContentGrid({ isPrivate, onViewContent }: ContentGridProps) {
     isFetchingNextPage,
     fetchNextPage,
     searchQuery,
-    handleSearch,
+    setSearchQuery,
     actions,
   } = useContent({
     isPrivate,
@@ -70,14 +72,14 @@ export function ContentGrid({ isPrivate, onViewContent }: ContentGridProps) {
     }
   }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-  // Handle search with debounce
-  const handleSearchChange = (value: string) => {
+  // Handle search input with debounce
+  const handleSearchInput = (value: string) => {
     if (searchTimeoutRef.current) {
       clearTimeout(searchTimeoutRef.current);
     }
     searchTimeoutRef.current = setTimeout(() => {
-      handleSearch(value);
-    }, 500);
+      setSearchQuery(value);
+    }, 300);
   };
 
   if (error) {
@@ -133,7 +135,7 @@ export function ContentGrid({ isPrivate, onViewContent }: ContentGridProps) {
         <Input
           placeholder="Search content..."
           value={searchQuery}
-          onChange={(e) => handleSearchChange(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleSearchInput(e.target.value)}
           className="flex-1"
         />
         <Select defaultValue="all">
@@ -176,7 +178,7 @@ export function ContentGrid({ isPrivate, onViewContent }: ContentGridProps) {
         animate="show"
         className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
       >
-        {content.map((item: ContentItem) => (
+        {sortedContent.map((item: ContentItem) => (
           <motion.div key={item.id} variants={itemAnimation}>
             <ContentCard
               content={item}

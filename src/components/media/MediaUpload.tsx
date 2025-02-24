@@ -1,6 +1,6 @@
 import { useSupabaseClient } from '@supabase/auth-helpers-react';
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
+
 import { Progress } from '@/components/ui/progress';
 import { FileUploader } from 'react-drag-drop-files';
 import { getMediaType } from '@/utils/mediaTypes';

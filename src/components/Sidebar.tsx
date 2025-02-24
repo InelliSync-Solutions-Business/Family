@@ -1,14 +1,19 @@
 import { Link } from 'react-router-dom'
-import { Button } from '@/components/ui/button'
+import { Button } from './ui/button'
 import { LayoutDashboard, Archive, User, Settings, BarChart } from 'lucide-react'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { Avatar, AvatarFallback } from './ui/avatar'
+import { useAuth } from '@/hooks/useAuth'
 
 export function Sidebar() {
+  const { user } = useAuth()
+
   return (
     <nav className="w-64 border-r bg-warm-100 p-4">
       <div className="mb-8 flex items-center gap-2">
         <Avatar>
-          <AvatarFallback className="bg-warm-600 text-warm-50">F</AvatarFallback>
+          <AvatarFallback className="bg-warm-600 text-warm-50">
+            {user?.name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || 'F'}
+          </AvatarFallback>
         </Avatar>
         <h2 className="font-serif text-xl text-warm-800">Family Archive</h2>
       </div>

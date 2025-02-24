@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Card } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
+import { Button } from '../components/ui/button'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { AIChat } from '@/components/AIChat'
 import { useAuth } from '@/hooks/use-auth'
@@ -38,17 +38,19 @@ export function SharedPage() {
     setItems(mockData)
   }, [])
 
-  const handleAIQuery = async (itemId: string) => {
+  const handleAIQuery = async (itemId: string | null) => {
+    if (!itemId) return { context: '', defaultQuestion: '' }
+    
     const item = items.find(i => i.id === itemId)
-    if (!item) return
+    if (!item) return { context: '', defaultQuestion: '' }
 
     const results = await searchDocuments({
       query: item.name,
-      userId: user?.id || ''
+      userId: user?.id
     })
 
     return {
-      context: results.map(r => r.text).join('\n'),
+      context: results.map(r => r.description).join('\n') || 'No context available',
       defaultQuestion: `Tell me about ${item.name}`
     }
   }
@@ -103,7 +105,7 @@ export function SharedPage() {
       <AIChat
         open={!!selectedItem}
         onOpenChange={(open) => !open && setSelectedItem(null)}
-        contextProvider={() => handleAIQuery(selectedItem!)}
+        contextProvider={() => handleAIQuery(selectedItem)}
       />
     </div>
   )

@@ -1,7 +1,6 @@
 import { useCallback } from 'react'
 import { useDropzone } from 'react-dropzone'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { Input } from './ui/input'
 import { Upload } from 'lucide-react'
 
 type FileUploadProps = {

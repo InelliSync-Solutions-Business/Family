@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { Timeline as VisTimeline, TimelineOptions } from 'vis-timeline/standalone';
 import { DataSet } from 'vis-data';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Button } from '../../components/ui/button';
+import { Input } from '../../components/ui/input';
 import {
   Select,
   SelectContent,

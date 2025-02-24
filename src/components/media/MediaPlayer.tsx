@@ -1,27 +1,58 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import videojs from 'video.js';
 import 'video.js/dist/video-js.css';
 
 type MediaType = 'video' | 'audio';
 type Annotation = { time: number; text: string };
 
+interface MediaPlayerProps {
+  src: string;
+  type: MediaType;
+  annotations?: Annotation[];
+  autoPlay?: boolean;
+  onPlay?: () => void;
+  onPause?: () => void;
+}
+
 export const MediaPlayer = ({
   src,
   type,
   annotations = [],
-}: {
-  src: string;
-  type: MediaType;
-  annotations?: Annotation[];
-}) => {
-  const mediaRef = useRef<HTMLVideoElement>(null);
+  autoPlay = false,
+  onPlay,
+  onPause,
+}: MediaPlayerProps) => {
+  const mediaRef = useRef<HTMLVideoElement | HTMLAudioElement>(null);
   const [currentTime, setCurrentTime] = useState(0);
+
+  useEffect(() => {
+    const mediaElement = mediaRef.current;
+    if (!mediaElement) return;
+
+    if (autoPlay) {
+      mediaElement.play().catch(() => {
+        // Autoplay failed, which is expected in some browsers
+        console.log('Autoplay prevented by browser');
+      });
+    }
+
+    const handlePlay = () => onPlay?.();
+    const handlePause = () => onPause?.();
+
+    mediaElement.addEventListener('play', handlePlay);
+    mediaElement.addEventListener('pause', handlePause);
+
+    return () => {
+      mediaElement.removeEventListener('play', handlePlay);
+      mediaElement.removeEventListener('pause', handlePause);
+    };
+  }, [autoPlay, onPlay, onPause]);
 
   return (
     <div className="relative group">
       {type === 'video' ? (
         <video
-          ref={mediaRef}
+          ref={mediaRef as React.RefObject<HTMLVideoElement>}
           className="video-js w-full rounded-lg shadow-xl"
           onTimeUpdate={(e) => 
             setCurrentTime(e.currentTarget.currentTime)
@@ -32,7 +63,7 @@ export const MediaPlayer = ({
         </video>
       ) : (
         <audio
-          ref={mediaRef}
+          ref={mediaRef as React.RefObject<HTMLAudioElement>}
           className="w-full"
           onTimeUpdate={(e) => 
             setCurrentTime(e.currentTarget.currentTime)

@@ -4,8 +4,10 @@ import { MediaTimelineView } from './MediaTimelineView';
 import { MediaUploadWizard } from './MediaUploadWizard';
 import { MediaSidebar } from './MediaSidebar';
 import { MediaDetailsModal } from './MediaDetailsModal';
-import { Button } from '@/components/ui/button';
+import { Button } from '../../components/ui/button';
 import { Toaster } from 'sonner';
+import { TimelineItem } from '../timeline/TimelineEnhanced';
+import type { MediaDetails } from './MediaDetailsModal';
 
 const meta = {
   title: 'Components/Media/MediaManager',
@@ -26,7 +28,20 @@ const samplePeople = [
   'Uncle Bob', 'Cousin Emma', 'Dad', 'Mom',
 ];
 
-const sampleItems = [
+type MediaItem = TimelineItem & {
+  title: string;
+  description: string;
+  date: Date;
+  location?: string;
+  mediaUrl?: string;
+  mediaType?: 'video' | 'audio';
+  thumbnailUrl?: string;
+  tags: string[];
+  people: string[];
+  transcription?: string;
+};
+
+const sampleItems: MediaItem[] = [
   {
     id: '1',
     title: 'Grandma\'s Wedding Video',
@@ -37,7 +52,7 @@ const sampleItems = [
     start: new Date(1955, 5, 15),
     type: 'point',
     mediaUrl: '/sample/wedding-video.mp4',
-    mediaType: 'video' as const,
+    mediaType: 'video',
     thumbnailUrl: '/sample/wedding-thumbnail.jpg',
     tags: ['wedding', 'family-event'],
     people: ['Grandma Sarah', 'Grandpa Joe'],
@@ -53,7 +68,7 @@ const sampleItems = [
     end: new Date(1975, 7, 15),
     type: 'range',
     mediaUrl: '/sample/italy-vacation.mp4',
-    mediaType: 'video' as const,
+    mediaType: 'video',
     thumbnailUrl: '/sample/italy-thumbnail.jpg',
     tags: ['vacation', 'travel'],
     people: ['Dad', 'Mom', 'Aunt Mary'],
@@ -67,7 +82,7 @@ const sampleItems = [
     start: new Date(1980, 6, 4),
     type: 'point',
     mediaUrl: '/sample/war-stories.mp3',
-    mediaType: 'audio' as const,
+    mediaType: 'audio',
     thumbnailUrl: '/sample/audio-waveform.png',
     tags: ['interview', 'history'],
     people: ['Grandpa Joe'],
@@ -78,15 +93,15 @@ const sampleItems = [
 export const MediaManager = () => {
   const [items, setItems] = useState(sampleItems);
   const [isUploadOpen, setIsUploadOpen] = useState(false);
-  const [selectedItem, setSelectedItem] = useState<typeof items[0] | null>(null);
+  const [selectedItem, setSelectedItem] = useState<MediaItem | null>(null);
   const [filteredItems, setFilteredItems] = useState(items);
 
   const handleUploadComplete = (metadata: any) => {
-    const newItem = {
+    const newItem: MediaItem = {
       id: crypto.randomUUID(),
       content: metadata.title,
       start: metadata.date,
-      type: 'point' as const,
+      type: 'point',
       ...metadata,
     };
     setItems(prev => [...prev, newItem]);
@@ -137,7 +152,7 @@ export const MediaManager = () => {
 
           if (filters.mediaTypes.length) {
             filtered = filtered.filter(item =>
-              filters.mediaTypes.includes(item.mediaType)
+              item.mediaType && filters.mediaTypes.includes(item.mediaType)
             );
           }
 
@@ -178,9 +193,9 @@ export const MediaManager = () => {
         onComplete={handleUploadComplete}
       />
 
-      {selectedItem && (
+      {selectedItem && selectedItem.mediaUrl && selectedItem.mediaType && selectedItem.thumbnailUrl && (
         <MediaDetailsModal
-          media={selectedItem}
+          media={selectedItem as MediaDetails}
           open={true}
           onClose={() => setSelectedItem(null)}
           onUpdate={handleItemUpdate}

@@ -6,16 +6,18 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { formatDistance } from 'date-fns';
 
+type MediaItem = TimelineItem & {
+  mediaUrl?: string;
+  mediaType?: 'video' | 'audio';
+  thumbnailUrl?: string;
+};
+
 type MediaTimelineProps = {
-  items: Array<TimelineItem & {
-    mediaUrl?: string;
-    mediaType?: 'video' | 'audio';
-    thumbnailUrl?: string;
-  }>;
+  items: MediaItem[];
 };
 
 export const MediaTimelineView = ({ items }: MediaTimelineProps) => {
-  const [selectedItem, setSelectedItem] = useState<TimelineItem | null>(null);
+  const [selectedItem, setSelectedItem] = useState<MediaItem | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const isLargeScreen = useMediaQuery('(min-width: 1024px)');
 
@@ -44,7 +46,7 @@ export const MediaTimelineView = ({ items }: MediaTimelineProps) => {
           items={itemsWithGroups}
           groups={groups}
           onItemClick={(item) => {
-            setSelectedItem(item);
+            setSelectedItem(item as MediaItem);
             setIsPlaying(true);
           }}
         />
@@ -105,27 +107,12 @@ export const MediaTimelineView = ({ items }: MediaTimelineProps) => {
                     setIsPlaying(true);
                   }}
                 >
-                  <img
-                    src={item.thumbnailUrl}
-                    alt={item.content}
-                    className="w-full h-full object-cover"
-                  />
-                  {item.mediaType === 'audio' && (
-                    <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
-                      <svg
-                        className="w-6 h-6 text-white"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M9 19V5l12 7-12 7z"
-                        />
-                      </svg>
-                    </div>
+                  {item.thumbnailUrl && (
+                    <img
+                      src={item.thumbnailUrl}
+                      alt={item.content}
+                      className="object-cover w-full h-full"
+                    />
                   )}
                 </button>
               ))}
